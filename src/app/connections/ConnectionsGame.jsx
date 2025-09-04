@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { CONNECTIONS_GROUPS } from "@/data/connectionsGroups";
 
 function shuffle(array) {
@@ -15,40 +16,17 @@ function pickRandomGroups(list, count) {
   return shuffled.slice(0, count);
 }
 
-export default function ConnectionsGame({ userId, username }) {
+export default function ConnectionsGame() {
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
+  const username = searchParams.get("username") || "DiscordUser";
+
   const [chosenGroups] = useState(() => pickRandomGroups(CONNECTIONS_GROUPS, 4));
-  const [grid, setGrid] = useState(
-    shuffle(chosenGroups.flatMap((g) => g.words))
-  );
+  const [grid, setGrid] = useState(shuffle(chosenGroups.flatMap((g) => g.words)));
   const [selected, setSelected] = useState([]);
   const [solvedGroups, setSolvedGroups] = useState([]);
   const [mistakes, setMistakes] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-
-  // Submit score to Supabase
-  async function submitScore(success, attempts) {
-    if (!userId) return;
-    try {
-      const res = await fetch("/api/score", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          username,
-          game: "connections",
-          score: success ? 1 : 0,
-          attempts,
-        }),
-      });
-
-      const data = await res.json();
-      if (!data.success) {
-        console.error("Failed to save score:", data.error);
-      }
-    } catch (err) {
-      console.error("Error submitting score:", err);
-    }
-  }
 
   function toggleWord(word) {
     if (gameOver) return;
@@ -62,9 +40,8 @@ export default function ConnectionsGame({ userId, username }) {
   function checkGroup() {
     if (selected.length !== 4 || gameOver) return;
 
-    const lowerSelected = selected.map((w) => w.toLowerCase()).sort();
-
     const group = chosenGroups.find((g) => {
+      const lowerSelected = selected.map((w) => w.toLowerCase()).sort();
       const lowerGroup = g.words.map((w) => w.toLowerCase()).sort();
       return lowerSelected.join(",") === lowerGroup.join(",");
     });
@@ -73,20 +50,32 @@ export default function ConnectionsGame({ userId, username }) {
       setSolvedGroups([...solvedGroups, group]);
       setSelected([]);
     } else {
-      const newMistakes = mistakes + 1;
-      setMistakes(newMistakes);
+      setMistakes(mistakes + 1);
       setSelected([]);
-      if (newMistakes >= 4) setGameOver(true);
+      if (mistakes + 1 >= 4) setGameOver(true);
     }
   }
 
   const allSolved = solvedGroups.length === 4;
 
+  async function submitScore(success, attempts) {
+    if (!userId) return;
+    await fetch("/api/score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId,
+        username,
+        game: "connections",
+        score: success ? 1 : 0,
+        attempts,
+      }),
+    });
+  }
+
   useEffect(() => {
-    if (allSolved) {
-      submitScore(true, mistakes); // success
-    } else if (gameOver) {
-      submitScore(false, mistakes); // failure
+    if (allSolved || gameOver) {
+      submitScore(allSolved, mistakes);
     }
   }, [allSolved, gameOver]);
 
@@ -100,9 +89,7 @@ export default function ConnectionsGame({ userId, username }) {
 
       {solvedGroups.map((group) => (
         <div key={group.name} className="mb-4 w-full max-w-md">
-          <p className="text-lg font-semibold text-green-700 mb-1">
-            {group.name}
-          </p>
+          <p className="text-lg font-semibold text-green-700 mb-1">{group.name}</p>
           <div className="grid grid-cols-4 gap-3">
             {group.words.map((word) => (
               <div
@@ -127,11 +114,7 @@ export default function ConnectionsGame({ userId, username }) {
                 onClick={() => toggleWord(word)}
                 disabled={gameOver}
                 className={`w-28 h-16 flex items-center justify-center font-bold rounded-lg shadow
-                  ${
-                    isSelected
-                      ? "bg-blue-400 text-white"
-                      : "bg-white text-gray-900 border-2 border-gray-300"
-                  }`}
+                  ${isSelected ? "bg-blue-400 text-white" : "bg-white text-gray-900 border-2 border-gray-300"}`}
               >
                 {word}
               </button>
@@ -149,17 +132,8 @@ export default function ConnectionsGame({ userId, username }) {
         </button>
       )}
 
-      {allSolved && (
-        <p className="mt-6 text-2xl font-semibold text-green-700">
-          🎉 You solved all groups!
-        </p>
-      )}
-
-      {gameOver && !allSolved && (
-        <p className="mt-6 text-2xl font-semibold text-red-700">
-          ❌ Game Over! You used all 4 attempts.
-        </p>
-      )}
+      {allSolved && <p className="mt-6 text-2xl font-semibold text-green-700">🎉 You solved all groups!</p>}
+      {gameOver && !allSolved && <p className="mt-6 text-2xl font-semibold text-red-700">❌ Game Over! You used all 4 attempts.</p>}
     </div>
   );
 }

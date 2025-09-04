@@ -1,19 +1,10 @@
-"use client";
-
-import { useSearchParams } from "next/navigation";
-import dynamic from "next/dynamic";
 import { Suspense } from "react";
-
-const WordleGame = dynamic(() => import("./WordleGame"), { ssr: false });
+import WordleGame from "./WordleGame";
 
 export default function Page() {
-  const searchParams = useSearchParams();
-  const userId = searchParams.get("userId");
-  const username = searchParams.get("username");
-
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <WordleGame userId={userId} username={username} />
+    <Suspense fallback={<div className="p-6 text-xl">Loading Wordle Game...</div>}>
+      <WordleGame />
     </Suspense>
   );
 }
