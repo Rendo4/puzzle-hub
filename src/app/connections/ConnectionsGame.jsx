@@ -1,4 +1,4 @@
-"use client"; // Full client-side component
+"use client";
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
@@ -42,7 +42,7 @@ export default function ConnectionsGame() {
   function checkGroup() {
     if (selected.length !== 4 || gameOver) return;
 
-    // Check group ignoring order and case
+    // Compare ignoring order and case
     const group = chosenGroups.find((g) => {
       const lowerSelected = selected.map((w) => w.toLowerCase()).sort();
       const lowerGroup = g.words.map((w) => w.toLowerCase()).sort();
