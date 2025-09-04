@@ -1,3 +1,4 @@
+// src/app/connections/ConnectionsGame.jsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,7 +13,8 @@ function shuffle(array) {
 }
 
 function pickRandomGroups(list, count) {
-  return shuffle(list).slice(0, count);
+  const shuffled = shuffle(list);
+  return shuffled.slice(0, count);
 }
 
 export default function ConnectionsGame() {
@@ -21,25 +23,26 @@ export default function ConnectionsGame() {
   const username = searchParams.get("username") || "DiscordUser";
 
   const [chosenGroups] = useState(() => pickRandomGroups(CONNECTIONS_GROUPS, 4));
-  const [grid] = useState(shuffle(chosenGroups.flatMap((g) => g.words)));
+  const [grid, setGrid] = useState(shuffle(chosenGroups.flatMap((g) => g.words)));
   const [selected, setSelected] = useState([]);
   const [solvedGroups, setSolvedGroups] = useState([]);
   const [mistakes, setMistakes] = useState(0);
   const [gameOver, setGameOver] = useState(false);
 
-  const toggleWord = (word) => {
+  // Toggle card selection
+  function toggleWord(word) {
     if (gameOver) return;
     if (selected.includes(word)) {
       setSelected(selected.filter((w) => w !== word));
     } else if (selected.length < 4) {
       setSelected([...selected, word]);
     }
-  };
+  }
 
-  const checkGroup = () => {
+  // Check group ignoring order
+  function checkGroup() {
     if (selected.length !== 4 || gameOver) return;
 
-    // Correct group ignoring order
     const group = chosenGroups.find((g) => {
       const lowerSelected = selected.map((w) => w.toLowerCase()).sort();
       const lowerGroup = g.words.map((w) => w.toLowerCase()).sort();
@@ -54,31 +57,39 @@ export default function ConnectionsGame() {
       setSelected([]);
       if (mistakes + 1 >= 4) setGameOver(true);
     }
-  };
+  }
 
   const allSolved = solvedGroups.length === 4;
 
+  // Submit score to backend
+  async function submitScore(success, attempts) {
+    if (!userId) return;
+    await fetch("/api/score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId,
+        username,
+        game: "connections",
+        score: success ? 1 : 0,
+        attempts,
+      }),
+    });
+  }
+
   useEffect(() => {
     if (allSolved || gameOver) {
-      if (!userId) return;
-      fetch("/api/score", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          username,
-          game: "connections",
-          score: allSolved ? 1 : 0,
-          attempts: mistakes,
-        }),
-      });
+      submitScore(allSolved, mistakes);
     }
   }, [allSolved, gameOver]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
       <h1 className="text-4xl font-bold mb-6 text-gray-900">Connections</h1>
-      <div className="mb-4 text-xl font-semibold text-red-600">Mistakes: {mistakes} / 4</div>
+
+      <div className="mb-4 text-xl font-semibold text-red-600">
+        Mistakes: {mistakes} / 4
+      </div>
 
       {solvedGroups.map((group) => (
         <div key={group.name} className="mb-4 w-full max-w-md">
@@ -106,9 +117,12 @@ export default function ConnectionsGame() {
                 key={word}
                 onClick={() => toggleWord(word)}
                 disabled={gameOver}
-                className={`w-28 h-16 flex items-center justify-center font-bold rounded-lg shadow ${
-                  isSelected ? "bg-blue-400 text-white" : "bg-white text-gray-900 border-2 border-gray-300"
-                }`}
+                className={`w-28 h-16 flex items-center justify-center font-bold rounded-lg shadow
+                  ${
+                    isSelected
+                      ? "bg-blue-400 text-white"
+                      : "bg-white text-gray-900 border-2 border-gray-300"
+                  }`}
               >
                 {word}
               </button>
@@ -126,8 +140,17 @@ export default function ConnectionsGame() {
         </button>
       )}
 
-      {allSolved && <p className="mt-6 text-2xl font-semibold text-green-700">🎉 You solved all groups!</p>}
-      {gameOver && !allSolved && <p className="mt-6 text-2xl font-semibold text-red-700">❌ Game Over! You used all 4 attempts.</p>}
+      {allSolved && (
+        <p className="mt-6 text-2xl font-semibold text-green-700">
+          🎉 You solved all groups!
+        </p>
+      )}
+
+      {gameOver && !allSolved && (
+        <p className="mt-6 text-2xl font-semibold text-red-700">
+          ❌ Game Over! You used all 4 attempts.
+        </p>
+      )}
     </div>
   );
 }
