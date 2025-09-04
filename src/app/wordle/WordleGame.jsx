@@ -63,6 +63,17 @@ export default function WordleGame() {
     }
   }, [finished]);
 
+  function getLetterStyle(letter, index) {
+    // Highlight logic only after submission
+    for (let g of guesses) {
+      if (g[index] === letter) {
+        if (letter === ANSWER[index]) return "bg-green-500 text-white";
+        else if (ANSWER.includes(letter)) return "bg-yellow-400 text-white";
+      }
+    }
+    return "text-gray-900"; // default for unsubmitted letters
+  }
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
       <h1 className="text-3xl font-bold mb-6 text-gray-900">Wordle Clone</h1>
@@ -85,19 +96,25 @@ export default function WordleGame() {
         </button>
       </form>
 
+      {/* Display guesses with highlighting */}
       <div className="space-y-2 mb-6">
         {guesses.map((g, i) => (
-          <div
-            key={i}
-            className={`p-2 rounded-lg ${
-              g === ANSWER ? "bg-green-500 text-white" : "bg-gray-300 text-gray-900"
-            }`}
-          >
-            {g}
+          <div key={i} className="flex gap-1">
+            {g.split("").map((letter, idx) => (
+              <div
+                key={idx}
+                className={`w-10 h-10 flex items-center justify-center font-bold rounded-lg shadow ${
+                  getLetterStyle(letter, idx)
+                }`}
+              >
+                {letter.toUpperCase()}
+              </div>
+            ))}
           </div>
         ))}
       </div>
 
+      {/* On-screen clickable keyboard */}
       <div className="space-y-2">
         {KEYBOARD.map((row, rowIndex) => (
           <div key={rowIndex} className="flex justify-center gap-1">
