@@ -33,13 +33,7 @@ export default function WordleGame() {
     await fetch("/api/score", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId,
-        username,
-        game: "wordle",
-        score: success ? 1 : 0,
-        attempts,
-      }),
+      body: JSON.stringify({ userId, username, game: "wordle", score: success ? 1 : 0, attempts }),
     });
   }
 
@@ -76,11 +70,7 @@ export default function WordleGame() {
         {guesses.map((g, i) => (
           <div
             key={i}
-            className={`p-2 rounded-lg ${
-              g === ANSWER
-                ? "bg-green-500 text-white"
-                : "bg-gray-300 text-gray-900"
-            }`}
+            className={`p-2 rounded-lg ${g === ANSWER ? "bg-green-500 text-white" : "bg-gray-300 text-gray-900"}`}
           >
             {g}
           </div>

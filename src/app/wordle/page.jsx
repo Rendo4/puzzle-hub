@@ -1,7 +1,4 @@
-import dynamic from "next/dynamic";
-
-// Dynamically import the client-side Wordle game
-const WordleGame = dynamic(() => import("./WordleGame"), { ssr: false });
+import WordleGame from "./WordleGame"; // Client Component
 
 export default function Page() {
   return <WordleGame />;
