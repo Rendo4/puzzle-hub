@@ -1,5 +1,10 @@
-import WordleGame from "./WordleGame"; // Client Component
+import { Suspense } from "react";
+import WordleGame from "./WordleGame";
 
 export default function Page() {
-  return <WordleGame />;
+  return (
+    <Suspense fallback={<p>Loading Wordle...</p>}>
+      <WordleGame />
+    </Suspense>
+  );
 }

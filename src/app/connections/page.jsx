@@ -1,5 +1,10 @@
-import ConnectionsGame from "./ConnectionsGame"; // Client Component
+import { Suspense } from "react";
+import ConnectionsGame from "./ConnectionsGame";
 
 export default function Page() {
-  return <ConnectionsGame />;
+  return (
+    <Suspense fallback={<p>Loading Connections Game...</p>}>
+      <ConnectionsGame />
+    </Suspense>
+  );
 }

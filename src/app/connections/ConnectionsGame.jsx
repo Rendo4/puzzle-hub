@@ -1,4 +1,3 @@
-// src/app/connections/ConnectionsGame.jsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -13,8 +12,7 @@ function shuffle(array) {
 }
 
 function pickRandomGroups(list, count) {
-  const shuffled = shuffle(list);
-  return shuffled.slice(0, count);
+  return shuffle(list).slice(0, count);
 }
 
 export default function ConnectionsGame() {
@@ -29,7 +27,6 @@ export default function ConnectionsGame() {
   const [mistakes, setMistakes] = useState(0);
   const [gameOver, setGameOver] = useState(false);
 
-  // Toggle card selection
   function toggleWord(word) {
     if (gameOver) return;
     if (selected.includes(word)) {
@@ -39,10 +36,10 @@ export default function ConnectionsGame() {
     }
   }
 
-  // Check group ignoring order
   function checkGroup() {
     if (selected.length !== 4 || gameOver) return;
 
+    // Check if selected words match any group ignoring order and case
     const group = chosenGroups.find((g) => {
       const lowerSelected = selected.map((w) => w.toLowerCase()).sort();
       const lowerGroup = g.words.map((w) => w.toLowerCase()).sort();
@@ -61,7 +58,6 @@ export default function ConnectionsGame() {
 
   const allSolved = solvedGroups.length === 4;
 
-  // Submit score to backend
   async function submitScore(success, attempts) {
     if (!userId) return;
     await fetch("/api/score", {
@@ -118,10 +114,9 @@ export default function ConnectionsGame() {
                 onClick={() => toggleWord(word)}
                 disabled={gameOver}
                 className={`w-28 h-16 flex items-center justify-center font-bold rounded-lg shadow
-                  ${
-                    isSelected
-                      ? "bg-blue-400 text-white"
-                      : "bg-white text-gray-900 border-2 border-gray-300"
+                  ${isSelected
+                    ? "bg-blue-400 text-white"
+                    : "bg-white text-gray-900 border-2 border-gray-300"
                   }`}
               >
                 {word}

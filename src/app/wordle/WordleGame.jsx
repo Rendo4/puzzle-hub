@@ -1,4 +1,3 @@
-// src/app/wordle/WordleGame.jsx
 "use client";
 
 import { useState, useEffect } from "react";
