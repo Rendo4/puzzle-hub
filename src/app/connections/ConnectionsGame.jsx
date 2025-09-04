@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { CONNECTIONS_GROUPS } from "@/data/connectionsGroups";
 
+// Shuffle helper
 function shuffle(array) {
   return array
     .map((a) => ({ sort: Math.random(), value: a }))
@@ -11,6 +12,7 @@ function shuffle(array) {
     .map((a) => a.value);
 }
 
+// Pick N random groups
 function pickRandomGroups(list, count) {
   const shuffled = shuffle(list);
   return shuffled.slice(0, count);
@@ -22,14 +24,15 @@ export default function ConnectionsGame() {
   const username = searchParams.get("username") || "DiscordUser";
 
   const [chosenGroups] = useState(() => pickRandomGroups(CONNECTIONS_GROUPS, 4));
-  const [grid] = useState(() => shuffle(chosenGroups.flatMap((g) => g.words)));
+  const [grid, setGrid] = useState(shuffle(chosenGroups.flatMap((g) => g.words)));
   const [selected, setSelected] = useState([]);
   const [solvedGroups, setSolvedGroups] = useState([]);
   const [mistakes, setMistakes] = useState(0);
   const [gameOver, setGameOver] = useState(false);
 
-  const maxAttempts = 4;
+  const MAX_ATTEMPTS = 4;
 
+  // Toggle selection
   function toggleWord(word) {
     if (gameOver) return;
     if (selected.includes(word)) {
@@ -39,26 +42,23 @@ export default function ConnectionsGame() {
     }
   }
 
+  // Check selected group (ignores order)
   function checkGroup() {
     if (selected.length !== 4 || gameOver) return;
 
-    const remainingGroups = chosenGroups.filter(
-      (g) => !solvedGroups.some((sg) => sg.name === g.name)
-    );
-
-    const group = remainingGroups.find((g) => {
+    const group = chosenGroups.find((g) => {
       const lowerSelected = selected.map((w) => w.toLowerCase()).sort();
       const lowerGroup = g.words.map((w) => w.toLowerCase()).sort();
       return lowerSelected.join(",") === lowerGroup.join(",");
     });
 
-    if (group) {
+    if (group && !solvedGroups.includes(group)) {
       setSolvedGroups([...solvedGroups, group]);
       setSelected([]);
     } else {
       setMistakes(mistakes + 1);
       setSelected([]);
-      if (mistakes + 1 >= maxAttempts) setGameOver(true);
+      if (mistakes + 1 >= MAX_ATTEMPTS) setGameOver(true);
     }
   }
 
@@ -90,9 +90,10 @@ export default function ConnectionsGame() {
       <h1 className="text-4xl font-bold mb-6 text-gray-900">Connections</h1>
 
       <div className="mb-4 text-xl font-semibold text-red-600">
-        Mistakes: {mistakes} / {maxAttempts}
+        Mistakes: {mistakes} / {MAX_ATTEMPTS}
       </div>
 
+      {/* Solved groups display */}
       {solvedGroups.map((group) => (
         <div key={group.name} className="mb-4 w-full max-w-md">
           <p className="text-lg font-semibold text-green-700 mb-1">{group.name}</p>
@@ -109,6 +110,7 @@ export default function ConnectionsGame() {
         </div>
       ))}
 
+      {/* Remaining words grid */}
       <div className="grid grid-cols-4 gap-3 mb-6">
         {grid
           .filter((word) => !solvedGroups.some((g) => g.words.includes(word)))
@@ -120,9 +122,10 @@ export default function ConnectionsGame() {
                 onClick={() => toggleWord(word)}
                 disabled={gameOver}
                 className={`w-28 h-16 flex items-center justify-center font-bold rounded-lg shadow
-                  ${isSelected
-                    ? "bg-blue-400 text-white"
-                    : "bg-white text-gray-900 border-2 border-gray-300"
+                  ${
+                    isSelected
+                      ? "bg-blue-400 text-white"
+                      : "bg-white text-gray-900 border-2 border-gray-300"
                   }`}
               >
                 {word}
@@ -149,7 +152,7 @@ export default function ConnectionsGame() {
 
       {gameOver && !allSolved && (
         <p className="mt-6 text-2xl font-semibold text-red-700">
-          ❌ Game Over! You used all {maxAttempts} attempts.
+          ❌ Game Over! You used all {MAX_ATTEMPTS} attempts.
         </p>
       )}
     </div>
