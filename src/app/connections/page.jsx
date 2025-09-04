@@ -16,15 +16,12 @@ function pickRandomGroups(list, count) {
   return shuffled.slice(0, count);
 }
 
-export default function ConnectionsPage() {
+export default function ConnectionsGame() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId"); // Discord ID
   const username = searchParams.get("username") || "DiscordUser";
 
-  // Pick 4 groups once at the start
   const [chosenGroups] = useState(() => pickRandomGroups(CONNECTIONS_GROUPS, 4));
-
-  // Flatten words for the grid and shuffle
   const [grid] = useState(() => shuffle(chosenGroups.flatMap((g) => g.words)));
   const [selected, setSelected] = useState([]);
   const [solvedGroups, setSolvedGroups] = useState([]);
@@ -33,7 +30,6 @@ export default function ConnectionsPage() {
 
   const maxAttempts = 4;
 
-  // Toggle selection of a word
   function toggleWord(word) {
     if (gameOver) return;
     if (selected.includes(word)) {
@@ -43,11 +39,9 @@ export default function ConnectionsPage() {
     }
   }
 
-  // Check if selected group is correct
   function checkGroup() {
     if (selected.length !== 4 || gameOver) return;
 
-    // Only check against unsolved groups by unique name
     const remainingGroups = chosenGroups.filter(
       (g) => !solvedGroups.some((sg) => sg.name === g.name)
     );
@@ -70,7 +64,6 @@ export default function ConnectionsPage() {
 
   const allSolved = solvedGroups.length === chosenGroups.length;
 
-  // Submit score to backend
   async function submitScore(success, attempts) {
     if (!userId) return;
     await fetch("/api/score", {
