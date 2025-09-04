@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+//adding this text to update filename
 export default function Navbar() {
   return (
     <nav className="w-full bg-gray-800 text-white px-6 py-3 shadow-md flex justify-between items-center">
