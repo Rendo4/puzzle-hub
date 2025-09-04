@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Secure vars for backend
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseServiceRoleKey) {
-  throw new Error("❌ SUPABASE URL and SERVICE ROLE KEY are required");
+// Debugging logs (these will show in Vercel build logs)
+if (!supabaseUrl) {
+  console.error("❌ Missing NEXT_PUBLIC_SUPABASE_URL");
+}
+if (!supabaseServiceRoleKey) {
+  console.error("❌ Missing SUPABASE_SERVICE_ROLE_KEY");
 }
 
-// Create client with service role key (server-only)
 const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
 export async function POST(req) {
