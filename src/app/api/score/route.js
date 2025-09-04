@@ -1,24 +1,28 @@
+import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY // service key (keep secret in env vars!)
 );
 
 export async function POST(req) {
-  const { userId, username, game, score, attempts } = await req.json();
+  try {
+    const { userId, username, game, score, attempts } = await req.json();
 
-  // Ensure user exists
-  await supabase.from("users").upsert(
-    { id: userId, username },
-    { onConflict: "id" }
-  );
+    if (!userId || !username || !game) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
 
-  // Insert score
-  const { data, error } = await supabase.from("scores").insert([
-    { user_id: userId, game, score, attempts },
-  ]);
+    const { error } = await supabase.from("scores").insert([
+      { userId, username, game, score, attempts },
+    ]);
 
-  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
-  return new Response(JSON.stringify({ success: true, data }), { status: 200 });
+    if (error) throw error;
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("Error saving score:", err.message);
+    return NextResponse.json({ error: "Failed to save score" }, { status: 500 });
+  }
 }
