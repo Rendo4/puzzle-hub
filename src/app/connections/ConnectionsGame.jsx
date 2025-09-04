@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { CONNECTIONS_GROUPS } from "@/data/connectionsGroups";
 
-// Shuffle helper
 function shuffle(array) {
   return array
     .map((a) => ({ sort: Math.random(), value: a }))
@@ -12,7 +11,6 @@ function shuffle(array) {
     .map((a) => a.value);
 }
 
-// Pick N random groups
 function pickRandomGroups(list, count) {
   const shuffled = shuffle(list);
   return shuffled.slice(0, count);
@@ -32,7 +30,6 @@ export default function ConnectionsGame() {
 
   const MAX_ATTEMPTS = 4;
 
-  // Toggle selection
   function toggleWord(word) {
     if (gameOver) return;
     if (selected.includes(word)) {
@@ -42,10 +39,10 @@ export default function ConnectionsGame() {
     }
   }
 
-  // Check selected group (ignores order)
   function checkGroup() {
     if (selected.length !== 4 || gameOver) return;
 
+    // Check group ignoring order and case
     const group = chosenGroups.find((g) => {
       const lowerSelected = selected.map((w) => w.toLowerCase()).sort();
       const lowerGroup = g.words.map((w) => w.toLowerCase()).sort();
@@ -80,9 +77,7 @@ export default function ConnectionsGame() {
   }
 
   useEffect(() => {
-    if (allSolved || gameOver) {
-      submitScore(allSolved, mistakes);
-    }
+    if (allSolved || gameOver) submitScore(allSolved, mistakes);
   }, [allSolved, gameOver]);
 
   return (
@@ -93,7 +88,7 @@ export default function ConnectionsGame() {
         Mistakes: {mistakes} / {MAX_ATTEMPTS}
       </div>
 
-      {/* Solved groups display */}
+      {/* Solved Groups */}
       {solvedGroups.map((group) => (
         <div key={group.name} className="mb-4 w-full max-w-md">
           <p className="text-lg font-semibold text-green-700 mb-1">{group.name}</p>
@@ -110,7 +105,7 @@ export default function ConnectionsGame() {
         </div>
       ))}
 
-      {/* Remaining words grid */}
+      {/* Active Grid */}
       <div className="grid grid-cols-4 gap-3 mb-6">
         {grid
           .filter((word) => !solvedGroups.some((g) => g.words.includes(word)))
@@ -134,6 +129,7 @@ export default function ConnectionsGame() {
           })}
       </div>
 
+      {/* Submit Button */}
       {!gameOver && !allSolved && (
         <button
           onClick={checkGroup}
@@ -144,6 +140,7 @@ export default function ConnectionsGame() {
         </button>
       )}
 
+      {/* End Messages */}
       {allSolved && (
         <p className="mt-6 text-2xl font-semibold text-green-700">
           🎉 You solved all groups!

@@ -1,4 +1,4 @@
-"use client"; // mark the page as a client component
+"use client";
 
 import ConnectionsGame from "./ConnectionsGame";
 

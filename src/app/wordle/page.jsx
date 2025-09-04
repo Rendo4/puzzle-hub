@@ -1,4 +1,4 @@
-"use client"; // mark the page as client component
+"use client";
 
 import WordleGame from "./WordleGame";
 

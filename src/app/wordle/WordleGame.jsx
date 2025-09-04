@@ -32,7 +32,6 @@ export default function WordleGame() {
     setGuesses(newGuesses);
     setGuess("");
 
-    // Update letter status
     const newStatus = { ...letterStatus };
     for (let i = 0; i < normalizedGuess.length; i++) {
       const letter = normalizedGuess[i].toUpperCase();
@@ -85,7 +84,7 @@ export default function WordleGame() {
     }
   }, [finished]);
 
-  function getCellColor(letter, idx, guessWord) {
+  function getCellColor(letter, idx) {
     if (ANSWER[idx] === letter) return "bg-green-500 text-white";
     if (ANSWER.includes(letter)) return "bg-yellow-400 text-white";
     return "bg-gray-300 text-gray-900";
@@ -119,7 +118,7 @@ export default function WordleGame() {
             {g.split("").map((letter, idx) => (
               <div
                 key={idx}
-                className={`flex items-center justify-center font-bold rounded-lg p-2 text-lg ${getCellColor(letter, idx, g)}`}
+                className={`flex items-center justify-center font-bold rounded-lg p-2 text-lg ${getCellColor(letter, idx)}`}
               >
                 {letter.toUpperCase()}
               </div>
