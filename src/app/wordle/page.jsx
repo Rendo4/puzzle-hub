@@ -1,7 +1,8 @@
-"use client";
+import dynamic from "next/dynamic";
 
-import WordleGame from "./WordleGame";
+// Dynamically import the client-side ConnectionsGame component
+const ConnectionsGame = dynamic(() => import("./ConnectionsGame"), { ssr: false });
 
 export default function Page() {
-  return <WordleGame />;
+  return <ConnectionsGame />;
 }
