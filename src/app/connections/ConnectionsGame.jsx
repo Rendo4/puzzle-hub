@@ -1,4 +1,4 @@
-"use client";
+"use client"; // Full client-side component
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
