@@ -1,105 +1,129 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-const WORDS = ["apple", "grape", "mango", "peach", "berry"];
-const ANSWER = WORDS[Math.floor(Math.random() * WORDS.length)];
-const KEYS = "QWERTYUIOPASDFGHJKLZXCVBNM".split("");
+const WORD_LENGTH = 5;
+const MAX_ATTEMPTS = 6;
+const SECRET_WORD = "APPLE"; // you can swap this or randomize later
+
+const KEYS = [
+  ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+  ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+  ["Z", "X", "C", "V", "B", "N", "M"],
+];
 
 export default function WordleGame() {
   const searchParams = useSearchParams();
-  const userId = searchParams.get("userId");
   const username = searchParams.get("username") || "DiscordUser";
 
-  const [guess, setGuess] = useState("");
   const [guesses, setGuesses] = useState([]);
-  const [finished, setFinished] = useState(false);
+  const [currentGuess, setCurrentGuess] = useState("");
+  const [gameOver, setGameOver] = useState(false);
+  const [won, setWon] = useState(false);
 
-  const handleSubmit = (e) => {
-    e?.preventDefault();
-    if (!guess) return;
+  function onKeyPress(key) {
+    if (gameOver) return;
 
-    const newGuesses = [...guesses, guess.toLowerCase()];
-    setGuesses(newGuesses);
-    setGuess("");
+    if (key === "ENTER") {
+      if (currentGuess.length === WORD_LENGTH) {
+        const newGuesses = [...guesses, currentGuess];
+        setGuesses(newGuesses);
+        setCurrentGuess("");
 
-    if (guess.toLowerCase() === ANSWER || newGuesses.length >= 6) setFinished(true);
-  };
-
-  const handleKeyClick = (key) => {
-    if (finished) return;
-    if (key === "ENTER") handleSubmit();
-    else if (key === "⌫") setGuess(guess.slice(0, -1));
-    else if (guess.length < 5) setGuess(guess + key.toLowerCase());
-  };
-
-  async function submitScore(success, attempts) {
-    if (!userId) return;
-    await fetch("/api/score", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, username, game: "wordle", score: success ? 1 : 0, attempts }),
-    });
+        if (currentGuess.toUpperCase() === SECRET_WORD) {
+          setWon(true);
+          setGameOver(true);
+        } else if (newGuesses.length >= MAX_ATTEMPTS) {
+          setGameOver(true);
+        }
+      }
+    } else if (key === "DEL") {
+      setCurrentGuess(currentGuess.slice(0, -1));
+    } else if (currentGuess.length < WORD_LENGTH && /^[A-Z]$/.test(key)) {
+      setCurrentGuess(currentGuess + key);
+    }
   }
 
-  useEffect(() => {
-    if (finished) submitScore(guesses.at(-1) === ANSWER, guesses.length);
-  }, [finished]);
+  function getLetterStyle(letter, index, guess) {
+    if (!SECRET_WORD.includes(letter)) return "bg-gray-500 text-white";
+    if (SECRET_WORD[index] === letter) return "bg-green-500 text-white";
+    return "bg-yellow-500 text-white";
+  }
+
+  function renderRow(word, isCurrent = false) {
+    const letters = word.split("");
+    return (
+      <div className="flex gap-2 mb-2">
+        {Array.from({ length: WORD_LENGTH }).map((_, i) => {
+          const letter = letters[i] || "";
+          let style = "bg-white text-gray-900 border-2 border-gray-300";
+          if (!isCurrent && letter) {
+            style = getLetterStyle(letter, i, word);
+          }
+          return (
+            <div
+              key={i}
+              className={`w-12 h-12 flex items-center justify-center font-bold rounded ${style}`}
+            >
+              {letter}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold mb-6">Wordle Clone</h1>
+      <h1 className="text-4xl font-bold mb-2 text-gray-900">Wordle</h1>
+      <p className="mb-6 text-gray-700">Welcome, <span className="font-semibold">{username}</span> 👋</p>
 
-      <form onSubmit={handleSubmit} className="mb-6">
-        <input
-          type="text"
-          value={guess}
-          maxLength={5}
-          onChange={(e) => setGuess(e.target.value)}
-          disabled={finished}
-          className="border-2 border-gray-400 rounded-lg p-2 text-lg text-gray-900"
-        />
-        <button type="submit" disabled={finished} className="ml-2 px-4 py-2 bg-blue-600 text-white rounded-lg">
-          Enter
-        </button>
-      </form>
+      <div className="mb-6">
+        {guesses.map((guess, i) => renderRow(guess))}
+        {!gameOver && renderRow(currentGuess, true)}
+      </div>
 
-      <div className="space-y-2 mb-6">
-        {guesses.map((g, i) => (
-          <div
-            key={i}
-            className={`p-2 rounded-lg ${g === ANSWER ? "bg-green-500 text-white" : "bg-gray-300 text-gray-900"}`}
-          >
-            {g}
+      <div className="space-y-2">
+        {KEYS.map((row, rIdx) => (
+          <div key={rIdx} className="flex justify-center gap-2">
+            {row.map((k) => (
+              <button
+                key={k}
+                onClick={() => onKeyPress(k)}
+                className="w-10 h-12 bg-gray-200 text-gray-800 font-semibold rounded"
+              >
+                {k}
+              </button>
+            ))}
+            {rIdx === KEYS.length - 1 && (
+              <>
+                <button
+                  onClick={() => onKeyPress("DEL")}
+                  className="px-4 h-12 bg-red-400 text-white font-semibold rounded"
+                >
+                  Del
+                </button>
+                <button
+                  onClick={() => onKeyPress("ENTER")}
+                  className="px-4 h-12 bg-green-600 text-white font-semibold rounded"
+                >
+                  Enter
+                </button>
+              </>
+            )}
           </div>
         ))}
       </div>
 
-      {/* Keyboard */}
-      <div className="grid grid-cols-10 gap-2">
-        {KEYS.map((key) => (
-          <button
-            key={key}
-            onClick={() => handleKeyClick(key)}
-            disabled={finished}
-            className="px-2 py-2 rounded-md bg-gray-200 text-gray-900"
-          >
-            {key}
-          </button>
-        ))}
-        <button onClick={() => handleKeyClick("ENTER")} disabled={finished} className="col-span-2 px-2 py-2 bg-blue-500 text-white rounded-md">
-          ENTER
-        </button>
-        <button onClick={() => handleKeyClick("⌫")} disabled={finished} className="col-span-2 px-2 py-2 bg-red-500 text-white rounded-md">
-          ⌫
-        </button>
-      </div>
-
-      {finished && (
-        <p className="mt-6 text-xl font-semibold">
-          {guesses.at(-1) === ANSWER ? "🎉 You solved it!" : `❌ Game Over! The word was ${ANSWER.toUpperCase()}`}
-        </p>
+      {gameOver && (
+        <div className="mt-6 text-xl font-bold">
+          {won ? (
+            <p className="text-green-600">🎉 You guessed the word!</p>
+          ) : (
+            <p className="text-red-600">❌ Game Over! The word was {SECRET_WORD}.</p>
+          )}
+        </div>
       )}
     </div>
   );
