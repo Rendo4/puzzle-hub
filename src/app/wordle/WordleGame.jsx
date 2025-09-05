@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 
 const WORDS = ["apple", "grape", "mango", "peach", "berry"];
 const ANSWER = WORDS[Math.floor(Math.random() * WORDS.length)];
-
 const KEYS = "QWERTYUIOPASDFGHJKLZXCVBNM".split("");
 
 export default function WordleGame() {
@@ -17,56 +16,36 @@ export default function WordleGame() {
   const [guesses, setGuesses] = useState([]);
   const [finished, setFinished] = useState(false);
 
-  function handleSubmit(e) {
-    e.preventDefault();
+  const handleSubmit = (e) => {
+    e?.preventDefault();
     if (!guess) return;
 
     const newGuesses = [...guesses, guess.toLowerCase()];
     setGuesses(newGuesses);
     setGuess("");
 
-    if (guess.toLowerCase() === ANSWER || newGuesses.length >= 6) {
-      setFinished(true);
-    }
-  }
+    if (guess.toLowerCase() === ANSWER || newGuesses.length >= 6) setFinished(true);
+  };
 
-  function handleKeyClick(key) {
+  const handleKeyClick = (key) => {
     if (finished) return;
-    if (key === "ENTER") handleSubmit({ preventDefault: () => {} });
+    if (key === "ENTER") handleSubmit();
     else if (key === "⌫") setGuess(guess.slice(0, -1));
     else if (guess.length < 5) setGuess(guess + key.toLowerCase());
-  }
+  };
 
   async function submitScore(success, attempts) {
     if (!userId) return;
     await fetch("/api/score", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId,
-        username,
-        game: "wordle",
-        score: success ? 1 : 0,
-        attempts,
-      }),
+      body: JSON.stringify({ userId, username, game: "wordle", score: success ? 1 : 0, attempts }),
     });
   }
 
   useEffect(() => {
-    if (finished) {
-      const success = guesses.at(-1) === ANSWER;
-      submitScore(success, guesses.length);
-    }
+    if (finished) submitScore(guesses.at(-1) === ANSWER, guesses.length);
   }, [finished]);
-
-  function getKeyStyle(key) {
-    for (let g of guesses) {
-      g.split("").forEach((c, i) => {
-        if (c === key.toLowerCase()) return "bg-yellow-400 text-white"; // simple highlight logic
-      });
-    }
-    return "bg-gray-200 text-gray-900";
-  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
@@ -81,11 +60,7 @@ export default function WordleGame() {
           disabled={finished}
           className="border-2 border-gray-400 rounded-lg p-2 text-lg text-gray-900"
         />
-        <button
-          type="submit"
-          disabled={finished}
-          className="ml-2 px-4 py-2 bg-blue-600 text-white rounded-lg"
-        >
+        <button type="submit" disabled={finished} className="ml-2 px-4 py-2 bg-blue-600 text-white rounded-lg">
           Enter
         </button>
       </form>
@@ -94,9 +69,7 @@ export default function WordleGame() {
         {guesses.map((g, i) => (
           <div
             key={i}
-            className={`p-2 rounded-lg ${
-              g === ANSWER ? "bg-green-500 text-white" : "bg-gray-300 text-gray-900"
-            }`}
+            className={`p-2 rounded-lg ${g === ANSWER ? "bg-green-500 text-white" : "bg-gray-300 text-gray-900"}`}
           >
             {g}
           </div>
@@ -110,32 +83,22 @@ export default function WordleGame() {
             key={key}
             onClick={() => handleKeyClick(key)}
             disabled={finished}
-            className={`px-2 py-2 rounded-md ${getKeyStyle(key)}`}
+            className="px-2 py-2 rounded-md bg-gray-200 text-gray-900"
           >
             {key}
           </button>
         ))}
-        <button
-          onClick={() => handleKeyClick("ENTER")}
-          disabled={finished}
-          className="col-span-2 px-2 py-2 bg-blue-500 text-white rounded-md"
-        >
+        <button onClick={() => handleKeyClick("ENTER")} disabled={finished} className="col-span-2 px-2 py-2 bg-blue-500 text-white rounded-md">
           ENTER
         </button>
-        <button
-          onClick={() => handleKeyClick("⌫")}
-          disabled={finished}
-          className="col-span-2 px-2 py-2 bg-red-500 text-white rounded-md"
-        >
+        <button onClick={() => handleKeyClick("⌫")} disabled={finished} className="col-span-2 px-2 py-2 bg-red-500 text-white rounded-md">
           ⌫
         </button>
       </div>
 
       {finished && (
         <p className="mt-6 text-xl font-semibold">
-          {guesses.at(-1) === ANSWER
-            ? "🎉 You solved it!"
-            : `❌ Game Over! The word was ${ANSWER.toUpperCase()}`}
+          {guesses.at(-1) === ANSWER ? "🎉 You solved it!" : `❌ Game Over! The word was ${ANSWER.toUpperCase()}`}
         </p>
       )}
     </div>

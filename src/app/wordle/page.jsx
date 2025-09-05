@@ -1,9 +1,11 @@
 import { Suspense } from "react";
-import WordleGame from "./WordleGame";
+import dynamic from "next/dynamic";
+
+const WordleGame = dynamic(() => import("./WordleGame"), { ssr: false });
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="p-6 text-xl">Loading Wordle Game...</div>}>
+    <Suspense fallback={<div>Loading Wordle...</div>}>
       <WordleGame />
     </Suspense>
   );

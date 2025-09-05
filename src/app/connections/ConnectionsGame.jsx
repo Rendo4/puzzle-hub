@@ -18,7 +18,6 @@ function pickRandomGroups(list, count) {
 
 export default function ConnectionsGame() {
   const searchParams = useSearchParams();
-  const userId = searchParams.get("userId");
   const username = searchParams.get("username") || "DiscordUser";
 
   const [chosenGroups] = useState(() => pickRandomGroups(CONNECTIONS_GROUPS, 4));
@@ -58,30 +57,10 @@ export default function ConnectionsGame() {
 
   const allSolved = solvedGroups.length === 4;
 
-  async function submitScore(success, attempts) {
-    if (!userId) return;
-    await fetch("/api/score", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId,
-        username,
-        game: "connections",
-        score: success ? 1 : 0,
-        attempts,
-      }),
-    });
-  }
-
-  useEffect(() => {
-    if (allSolved || gameOver) {
-      submitScore(allSolved, mistakes);
-    }
-  }, [allSolved, gameOver]);
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
-      <h1 className="text-4xl font-bold mb-6 text-gray-900">Connections</h1>
+      <h1 className="text-4xl font-bold mb-2 text-gray-900">Connections</h1>
+      <p className="mb-6 text-gray-700">Welcome, <span className="font-semibold">{username}</span> 👋</p>
 
       <div className="mb-4 text-xl font-semibold text-red-600">
         Mistakes: {mistakes} / 4

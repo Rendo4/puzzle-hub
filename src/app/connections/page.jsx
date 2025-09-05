@@ -1,9 +1,11 @@
 import { Suspense } from "react";
-import ConnectionsGame from "./ConnectionsGame";
+import dynamic from "next/dynamic";
+
+const ConnectionsGame = dynamic(() => import("./ConnectionsGame"), { ssr: false });
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="p-6 text-xl">Loading Connections Game...</div>}>
+    <Suspense fallback={<div>Loading Connections...</div>}>
       <ConnectionsGame />
     </Suspense>
   );
