@@ -18,7 +18,7 @@ function pickRandomGroups(list, count) {
 
 export default function ConnectionsGame() {
   const searchParams = useSearchParams();
-  const userId = searchParams.get("userId");
+  const userId = searchParams.get("userId") || "defaultUserId";
   const username = searchParams.get("username") || "DiscordUser";
 
   const [chosenGroups] = useState(() => pickRandomGroups(CONNECTIONS_GROUPS, 4));

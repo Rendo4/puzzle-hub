@@ -16,7 +16,7 @@ function getRandomWord() {
 
 export default function WordleGame() {
   const searchParams = useSearchParams();
-  const userId = searchParams.get("userId");
+  const userId = searchParams.get("userId") || "defaultUserId";
   const username = searchParams.get("username") || "DiscordUser";
 
   const [solution] = useState(getRandomWord);
