@@ -18,6 +18,7 @@ function pickRandomGroups(list, count) {
 
 export default function ConnectionsGame() {
   const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
   const username = searchParams.get("username") || "DiscordUser";
 
   const [chosenGroups] = useState(() => pickRandomGroups(CONNECTIONS_GROUPS, 4));
@@ -59,8 +60,7 @@ export default function ConnectionsGame() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
-      <h1 className="text-4xl font-bold mb-2 text-gray-900">Connections</h1>
-      <p className="mb-6 text-gray-700">Welcome, <span className="font-semibold">{username}</span> 👋</p>
+      <h1 className="text-4xl font-bold mb-6 text-gray-900">Connections</h1>
 
       <div className="mb-4 text-xl font-semibold text-red-600">
         Mistakes: {mistakes} / 4
@@ -111,8 +111,16 @@ export default function ConnectionsGame() {
         </button>
       )}
 
-      {allSolved && <p className="mt-6 text-2xl font-semibold text-green-700">🎉 You solved all groups!</p>}
-      {gameOver && !allSolved && <p className="mt-6 text-2xl font-semibold text-red-700">❌ Game Over! You used all 4 attempts.</p>}
+      {allSolved && (
+        <p className="mt-6 text-2xl font-semibold text-green-700">
+          🎉 You solved all groups!
+        </p>
+      )}
+      {gameOver && !allSolved && (
+        <p className="mt-6 text-2xl font-semibold text-red-700">
+          ❌ Game Over! You used all 4 attempts.
+        </p>
+      )}
     </div>
   );
 }

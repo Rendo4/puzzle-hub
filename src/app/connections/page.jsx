@@ -1,7 +1,5 @@
 import { Suspense } from "react";
-import dynamic from "next/dynamic";
-
-const ConnectionsGame = dynamic(() => import("./ConnectionsGame"), { ssr: false });
+import ConnectionsGame from "./ConnectionsGame";
 
 export default function Page() {
   return (

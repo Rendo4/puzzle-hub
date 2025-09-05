@@ -1,7 +1,5 @@
 import { Suspense } from "react";
-import dynamic from "next/dynamic";
-
-const WordleGame = dynamic(() => import("./WordleGame"), { ssr: false });
+import WordleGame from "./WordleGame";
 
 export default function Page() {
   return (
